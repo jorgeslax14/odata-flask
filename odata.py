@@ -21,7 +21,7 @@ class ODataProductos(Resource):
 
         # Aplicar $top (limita resultados)
         if "$top" in query:
-            productos_filtrados = productos_filtrados[:int(query["$top"])]
+            productos_filtrados = productos_filtrados[:int(query["$count=true$top"])]
         
         response_data = {
             "@odata.context": "https://odata-flask.onrender.com/odata/$metadata#Productos",
