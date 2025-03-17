@@ -21,16 +21,19 @@ class ODataProductos(Resource):
 
         # Aplicar $top (limita resultados)
         if "$top" in query:
-            productos_filtrados = productos_filtrados[:int(query["$count=true&$top"])]
-        
+            productos_filtrados = productos_filtrados[:int(query["$top"])]
+
+        if "$skip" in query:
+            productos_filtrados = productos_filtrados[int(query["$skip"]):]
+
+        base_url = request.url_root.rstrip("/")
         response_data = {
-            "@odata.context": "https://odata-flask.onrender.com/odata/$metadata#Productos",
+            "@odata.context": f"{base_url}/odata/$metadata#Productos",
             "value": productos_filtrados,
         }
+
         response = make_response(jsonify(response_data))
-        response.headers["Content-Type"] = (
-            "application/json;odata.metadata=minimal"
-        )
+        response.headers["Content-Type"] = "application/json;odata.metadata=minimal"
         response.headers["OData-Version"] = "4.0"
         return response
 
