@@ -14,9 +14,9 @@ data_productos = [
 # Servicio OData para Productos
 class ODataProductos(Resource):
     def get(self):
-        base_url = request.url_root.rstrip("/")
+        
         response_data = {
-            "@odata.context": f"{base_url}/odata/$metadata#Productos",
+            "@odata.context": "https://odata-flask.onrender.com/odata/$metadata#Productos",
             "value": data_productos
         }
         response = make_response(jsonify(response_data))
