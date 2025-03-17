@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response,  make_response
 from flask_restful import Api, Resource
 import xml.etree.ElementTree as ET
 
@@ -19,18 +19,12 @@ data_personas = [
 # Servicio OData para Productos
 class ODataProductos(Resource):
     def get(self):
-        return {
+        response = make_response(jsonify({
             "@odata.context": "https://odata-flask.onrender.com/odata/$metadata#Productos",
             "value": data_productos
-        }, 200
-
-    def post(self):
-        try:
-            new_entry = request.get_json()
-            data_productos.append(new_entry)
-            return {"message": "Producto agregado", "data": new_entry}, 201
-        except Exception as e:
-            return {"error": str(e)}, 400
+        }))
+        response.headers["Content-Type"] = "application/json;odata.metadata=minimal"
+        return response
 
 # Servicio OData para Personas
 class ODataPersonas(Resource):
@@ -56,6 +50,7 @@ def generate_metadata():
     schema = ET.SubElement(data_services, f"{{{edm_namespace}}}Schema", Namespace="ODataExample")
 
     # Entidad Producto
+# Entidad Producto
     entity_producto = ET.SubElement(schema, f"{{{edm_namespace}}}EntityType", Name="Producto")
     key = ET.SubElement(entity_producto, f"{{{edm_namespace}}}Key")
     ET.SubElement(key, f"{{{edm_namespace}}}PropertyRef", Name="ID")
@@ -72,7 +67,7 @@ def generate_metadata():
     ET.SubElement(entity_persona, f"{{{edm_namespace}}}Property", Name="Edad", Type="Edm.Int32")
 
     # Entity Container
-    entity_container = ET.SubElement(schema, f"{{{edm_namespace}}}EntityContainer", Name="ODataExampleContainer")
+    entity_container = ET.SubElement(schema, f"{{{edm_namespace}}}EntityContainer", Name="ODataExampleContainer", m_EntitySetAccess="Public")
     ET.SubElement(entity_container, f"{{{edm_namespace}}}EntitySet", Name="Productos", EntityType="ODataExample.Producto")
     ET.SubElement(entity_container, f"{{{edm_namespace}}}EntitySet", Name="Personas", EntityType="ODataExample.Persona")
 
