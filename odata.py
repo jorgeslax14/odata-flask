@@ -8,16 +8,15 @@ api = Api(app)
 auth = HTTPBasicAuth()
 
 # Usuarios autorizados (clave: usuario -> valor: contraseña)
-USERS = {
-    "admin": "admin",
-    "usuario1": "admin123"
-}
+USERS = {"admin": "admin", "usuario1": "admin123"}
+
 
 @auth.verify_password
 def verify_password(username, password):
     if username in USERS and USERS[username] == password:
         return username
     return None
+
 
 # Base de datos simulada
 data_productos = [
@@ -29,16 +28,16 @@ data_productos = [
 # Servicio OData para Productos
 class ODataProductos(Resource):
     def get(self):
-        
+
         query = request.args
         productos_filtrados = data_productos
 
         # Aplicar $top (limita resultados)
         if "$top" in query:
-            productos_filtrados = productos_filtrados[:int(query["$top"])]
+            productos_filtrados = productos_filtrados[: int(query["$top"])]
 
         if "$skip" in query:
-            productos_filtrados = productos_filtrados[int(query["$skip"]):]
+            productos_filtrados = productos_filtrados[int(query["$skip"]) :]
 
         base_url = request.url_root.rstrip("/")
         response_data = {
@@ -47,14 +46,16 @@ class ODataProductos(Resource):
         }
 
         response = make_response(jsonify(response_data))
-        response.headers["Content-Type"] = "application/json;odata.metadata=minimal"
+        response.headers["Content-Type"] = (
+            "application/json;odata.metadata=minimal"
+        )
         response.headers["OData-Version"] = "4.0"
         return response
 
 
 # Función para generar metadata.xml manualmente
 def generate_metadata():
-    
+
     edmx_namespace = "http://docs.oasis-open.org/odata/ns/edmx"
     edm_namespace = "http://docs.oasis-open.org/odata/ns/edm"
 
@@ -108,6 +109,7 @@ def generate_metadata():
 
 # Servicio para exponer metadata OData
 class MetadataService(Resource):
+    @auth.login_required
     def get(self):
         metadata_xml = generate_metadata()
         response = Response(metadata_xml, mimetype="application/xml")
