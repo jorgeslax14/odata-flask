@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Response,  make_response
+from flask import Flask, request, jsonify, Response, make_response
 from flask_restful import Api, Resource
 import xml.etree.ElementTree as ET
 
@@ -8,46 +8,79 @@ api = Api(app)
 # Base de datos simulada
 data_productos = [
     {"ID": 1, "Nombre": "Producto A", "Precio": 100.5},
-    {"ID": 2, "Nombre": "Producto B", "Precio": 200.0}
+    {"ID": 2, "Nombre": "Producto B", "Precio": 200.0},
 ]
+
 
 # Servicio OData para Productos
 class ODataProductos(Resource):
     def get(self):
-        
+
         response_data = {
             "@odata.context": "https://odata-flask.onrender.com/odata/$metadata#Productos",
-            "value": data_productos
+            "value": data_productos,
         }
         response = make_response(jsonify(response_data))
-        response.headers["Content-Type"] = "application/json;odata.metadata=minimal"
+        response.headers["Content-Type"] = (
+            "application/json;odata.metadata=minimal"
+        )
         response.headers["OData-Version"] = "4.0"
         return response
 
+
 # Función para generar metadata.xml manualmente
 def generate_metadata():
- edmx_namespace = "http://docs.oasis-open.org/odata/ns/edmx"
+    edmx_namespace = "http://docs.oasis-open.org/odata/ns/edmx"
     edm_namespace = "http://docs.oasis-open.org/odata/ns/edm"
 
     edmx = ET.Element(f"{{{edmx_namespace}}}Edmx", Version="4.0")
     data_services = ET.SubElement(edmx, f"{{{edm_namespace}}}DataServices")
 
     # Schema
-    schema = ET.SubElement(data_services, f"{{{edm_namespace}}}Schema", Namespace="ODataExample")
+    schema = ET.SubElement(
+        data_services, f"{{{edm_namespace}}}Schema", Namespace="ODataExample"
+    )
 
     # Producto EntityType
-    entity_type = ET.SubElement(schema, f"{{{edm_namespace}}}EntityType", Name="Producto")
+    entity_type = ET.SubElement(
+        schema, f"{{{edm_namespace}}}EntityType", Name="Producto"
+    )
     key = ET.SubElement(entity_type, f"{{{edm_namespace}}}Key")
     ET.SubElement(key, f"{{{edm_namespace}}}PropertyRef", Name="ID")
-    ET.SubElement(entity_type, f"{{{edm_namespace}}}Property", Name="ID", Type="Edm.Int32", Nullable="false")
-    ET.SubElement(entity_type, f"{{{edm_namespace}}}Property", Name="Nombre", Type="Edm.String")
-    ET.SubElement(entity_type, f"{{{edm_namespace}}}Property", Name="Precio", Type="Edm.Double")
+    ET.SubElement(
+        entity_type,
+        f"{{{edm_namespace}}}Property",
+        Name="ID",
+        Type="Edm.Int32",
+        Nullable="false",
+    )
+    ET.SubElement(
+        entity_type,
+        f"{{{edm_namespace}}}Property",
+        Name="Nombre",
+        Type="Edm.String",
+    )
+    ET.SubElement(
+        entity_type,
+        f"{{{edm_namespace}}}Property",
+        Name="Precio",
+        Type="Edm.Double",
+    )
 
     # EntityContainer
-    entity_container = ET.SubElement(schema, f"{{{edm_namespace}}}EntityContainer", Name="Container")
-    ET.SubElement(entity_container, f"{{{edm_namespace}}}EntitySet", Name="Productos", EntityType="ODataExample.Producto")
+    entity_container = ET.SubElement(
+        schema, f"{{{edm_namespace}}}EntityContainer", Name="Container"
+    )
+    ET.SubElement(
+        entity_container,
+        f"{{{edm_namespace}}}EntitySet",
+        Name="Productos",
+        EntityType="ODataExample.Producto",
+    )
 
     return ET.tostring(edmx, encoding="utf-8", method="xml").decode("utf-8")
+
+
 # Servicio para exponer metadata OData
 class MetadataService(Resource):
     def get(self):
@@ -55,6 +88,7 @@ class MetadataService(Resource):
         response = Response(metadata_xml, mimetype="application/xml")
         response.headers["OData-Version"] = "4.0"
         return response
+
 
 # Agregar rutas al API
 api.add_resource(ODataProductos, "/odata/productos")
