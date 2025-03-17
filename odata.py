@@ -15,7 +15,14 @@ data_productos = [
 # Servicio OData para Productos
 class ODataProductos(Resource):
     def get(self):
+        
+        query = request.args
+        productos_filtrados = data_productos
 
+        # Aplicar $top (limita resultados)
+        if "$top" in query:
+            productos_filtrados = productos_filtrados[:int(query["$top"])]
+        
         response_data = {
             "@odata.context": "https://odata-flask.onrender.com/odata/$metadata#Productos",
             "value": data_productos,
