@@ -27,8 +27,8 @@ data_productos = [
 
 # Servicio OData para Productos
 class ODataProductos(Resource):
+    @auth.login_required
     def get(self):
-
         query = request.args
         productos_filtrados = data_productos
 
