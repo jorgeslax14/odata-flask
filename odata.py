@@ -1,9 +1,23 @@
 from flask import Flask, request, jsonify, Response, make_response
 from flask_restful import Api, Resource
 import xml.etree.ElementTree as ET
+from flask_httpauth import HTTPBasicAuth
 
 app = Flask(__name__)
 api = Api(app)
+auth = HTTPBasicAuth()
+
+# Usuarios autorizados (clave: usuario -> valor: contraseña)
+USERS = {
+    "admin": "admin",
+    "usuario1": "admin123"
+}
+
+@auth.verify_password
+def verify_password(username, password):
+    if username in USERS and USERS[username] == password:
+        return username
+    return None
 
 # Base de datos simulada
 data_productos = [
@@ -40,6 +54,7 @@ class ODataProductos(Resource):
 
 # Función para generar metadata.xml manualmente
 def generate_metadata():
+    @auth.login_required
     edmx_namespace = "http://docs.oasis-open.org/odata/ns/edmx"
     edm_namespace = "http://docs.oasis-open.org/odata/ns/edm"
 
