@@ -101,7 +101,7 @@ class MetadataService(Resource):
 
 
 # Agregar rutas al API
-api.add_resource(ODataProductos, "/odata/productos")
+api.add_resource(ODataProductos, "/odata/Productos")
 api.add_resource(MetadataService, "/odata/$metadata")
 
 if __name__ == "__main__":
