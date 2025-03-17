@@ -25,7 +25,7 @@ class ODataProductos(Resource):
         
         response_data = {
             "@odata.context": "https://odata-flask.onrender.com/odata/$metadata#Productos",
-            "value": data_productos,
+            "value": productos_filtrados,
         }
         response = make_response(jsonify(response_data))
         response.headers["Content-Type"] = (
