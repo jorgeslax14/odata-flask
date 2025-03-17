@@ -54,7 +54,7 @@ class ODataProductos(Resource):
 
 # Función para generar metadata.xml manualmente
 def generate_metadata():
-    @auth.login_required
+    
     edmx_namespace = "http://docs.oasis-open.org/odata/ns/edmx"
     edm_namespace = "http://docs.oasis-open.org/odata/ns/edm"
 
