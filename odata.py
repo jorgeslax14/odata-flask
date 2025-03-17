@@ -19,7 +19,10 @@ data_personas = [
 # Servicio OData para Productos
 class ODataProductos(Resource):
     def get(self):
-        return {"value": data_productos}, 200
+        return {
+            "@odata.context": "https://odata-flask.onrender.com/odata/$metadata#Productos",
+            "value": data_productos
+        }, 200
 
     def post(self):
         try:
