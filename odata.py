@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, Response, make_response
 from flask_restful import Api, Resource
 import xml.etree.ElementTree as ET
 from flask_httpauth import HTTPBasicAuth
+from urllib.parse import unquote
 
 app = Flask(__name__)
 api = Api(app)
