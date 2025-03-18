@@ -29,29 +29,67 @@ data_productos = [
 class ODataProductos(Resource):
     @auth.login_required
     def get(self):
-        query = request.args
-        productos_filtrados = data_productos
-
-        # Aplicar $top (limita resultados)
-        if "$top" in query:
-            productos_filtrados = productos_filtrados[: int(query["$top"])]
-
-        if "$skip" in query:
-            productos_filtrados = productos_filtrados[int(query["$skip"]) :]
-
         base_url = request.url_root.rstrip("/")
+        filter_query = request.args.get("$filter", "")
+
+        productos_filtrados = self.aplicar_filtro(filter_query, PRODUCTOS)
+
         response_data = {
             "@odata.context": f"{base_url}/odata/$metadata#Productos",
-            "value": productos_filtrados,
+            "value": productos_filtrados
         }
-
         response = make_response(jsonify(response_data))
-        response.headers["Content-Type"] = (
-            "application/json;odata.metadata=minimal"
-        )
+        response.headers["Content-Type"] = "application/json;odata.metadata=minimal"
         response.headers["OData-Version"] = "4.0"
         return response
 
+    def aplicar_filtro(self, filter_query, productos):
+        if not filter_query:
+            return productos  # Sin filtro, devolver todos los productos
+        
+        try:
+            filter_query = unquote(filter_query)  # Decodificar caracteres URL
+            key, operator, value = self.parse_filter(filter_query)
+
+            if key not in ["ID", "Nombre", "Precio"]:
+                return productos  # Si la clave no existe, no filtrar
+
+            # Convertir valores numéricos
+            if key in ["ID", "Precio"]:
+                value = float(value) if "." in value else int(value)
+
+            # Aplicar el filtro
+            if operator == "eq":
+                return [p for p in productos if p[key] == value]
+            elif operator == "ne":
+                return [p for p in productos if p[key] != value]
+            elif operator == "gt":
+                return [p for p in productos if p[key] > value]
+            elif operator == "lt":
+                return [p for p in productos if p[key] < value]
+            elif operator == "ge":
+                return [p for p in productos if p[key] >= value]
+            elif operator == "le":
+                return [p for p in productos if p[key] <= value]
+            elif operator == "contains":
+                return [p for p in productos if value.lower() in p[key].lower()]
+            else:
+                return productos  # Si la operación no es válida, devolver sin filtro
+        except Exception as e:
+            print(f"Error aplicando filtro: {e}")
+            return productos
+
+    def parse_filter(self, filter_query):
+        operators = [" eq ", " ne ", " gt ", " lt ", " ge ", " le ", " contains("]
+        for op in operators:
+            if op in filter_query:
+                if op == " contains(":
+                    key, value = filter_query.replace(")", "").split(" contains(")
+                    return key.strip(), "contains", value.strip().strip("'")
+                else:
+                    key, value = filter_query.split(op)
+                    return key.strip(), op.strip(), value.strip().strip("'")
+        return None, None, None  # No se encontró un operador válido
 
 # Función para generar metadata.xml manualmente
 def generate_metadata():
