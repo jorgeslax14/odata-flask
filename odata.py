@@ -19,9 +19,11 @@ def verify_password(username, password):
 
 
 # Base de datos simulada
-data_productos = [
+# Datos simulados
+PRODUCTOS = [
     {"ID": 1, "Nombre": "Producto A", "Precio": 100.5},
     {"ID": 2, "Nombre": "Producto B", "Precio": 200.0},
+    {"ID": 3, "Nombre": "Producto C", "Precio": 150.75},
 ]
 
 
